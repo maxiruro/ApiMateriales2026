@@ -1,0 +1,119 @@
+<div class="container mt-3">
+
+  <section>
+    <article>
+
+      <h2 class="titulo-vista">Productos</h2>
+
+      <!-- Button trigger modal -->
+      <button type="button" class="btn-nuevo-flotante" data-bs-toggle="modal" data-bs-target="#modalProducto">
+        Nuevo Producto
+      </button>
+
+      <!-- Modal crear tipo actividad -->
+      <div class="modal fade" id="modalProducto" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5 subTitulo-vista">Registro</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                onclick="LimpiarModal()"></button>
+            </div>
+            <div class="modal-body">
+              <form class="formProducto">
+                <input type="hidden" id="productoID" value="0" disabled />
+
+                <div class="mb-3">
+                  <label for="productoDescripcion" class="form-label">Descripción</label>
+                  <input type="text" class="form-control input-requerido" id="productoDescripcion"
+                    placeholder="Ingrese el producto a cargar" style="text-transform: uppercase" />
+                 <span class="error-texto  text-danger" id="errorProducto"></span>
+                </div>
+
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                onclick="LimpiarModal()">Cancelar</button>
+              <button type="button" class="btn btn-editar" onclick="GuardarProducto()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal MaterialesProducto -->
+      <div class="modal fade" id="modalMaterialesProducto" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5 subTitulo-vista">Composición</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+      
+              <form class="formMaterialProducto mb-3">
+                <input type="hidden" id="materialProductoID" />
+      
+                <div class="row g-2 align-items-end">
+                  <!-- Select Material -->
+                  <div class="col-md-4">
+                    <label for="selectMaterial" class="form-label">Material</label>
+                    <select id="selectMaterial" class="form-select"></select>
+                  </div>
+      
+                  <!-- Input Cantidad -->
+                  <div class="col-md-4">
+                    <label for="cantidad" class="form-label">Cantidad</label>
+                    <!-- Nota: type debe ser "number" o "text" -->
+                    <input type="number" class="form-control" id="cantidad" />
+                  </div>
+
+                  <div class="col-md-2"></div>
+      
+                  <!-- Botón -->
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-editar w-100" onclick="AgregarMaterialProducto()">+</button>
+                  </div>
+                </div>
+              </form>
+
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Material</th>
+                    <th class="text-center" scope="col">Precio de costo unitario</th>
+                    <th class="text-center" scope="col">Cantidad</th>
+                    <th class="text-center" scope="col">Subtotal</th>
+                    <th class="text-center" scope="col">Eliminar</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-materiales-producto">
+                </tbody>
+              </table>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th scope="col">Producto</th>
+            <th scope="col">Costo Total</th>
+            <th scope="col" class="columnaBtn">Composición</th>
+            <th scope="col" class="columnaBtn">Editar</th>
+            <th scope="col" class="columnaBtn">Eliminar</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-productos"></tbody>
+      </table>
+
+
+    </article>
+  </section>
+
+</div>
+<script src="../../js/producto.js"></script>

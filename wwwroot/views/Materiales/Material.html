@@ -1,0 +1,86 @@
+<div class="container mt-3">
+  <section>
+    <article>
+      <h2 class="titulo-vista">Materiales</h2>
+
+      <!-- Botón flotante para abrir el modal -->
+      <button type="button" class="btn-nuevo-flotante" data-bs-toggle="modal" data-bs-target="#modalMaterial">
+        Nuevo Material
+      </button>
+
+      <!-- Modal Crear / Editar Material -->
+      <div class="modal fade" id="modalMaterial" tabindex="-1" aria-labelledby="modalMaterialLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            
+            <div class="modal-header">
+              <h1 class="modal-title fs-5 subTitulo-vista" id="modalMaterialLabel">Registro</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="LimpiarModal()"></button>
+            </div>
+
+            <div class="modal-body">
+              <form class="formMaterial" id="formMaterial">
+                <input type="hidden" id="materialID" value="0" disabled />
+
+                <div class="mb-3">
+                  <label for="selectRubro" class="form-label">Rubro</label>
+                  <select id="selectRubro" class="form-select"></select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="materialDescripcion" class="form-label">Descripción</label>
+                  <input 
+                    type="text" 
+                    class="form-control input-requerido" 
+                    id="materialDescripcion"
+                    placeholder="Ingrese el material a cargar" 
+                    style="text-transform: uppercase" 
+                  />
+                  <span class="error-texto text-danger" id="errorMaterial"></span>
+                </div>
+
+                <div class="mb-3">
+                  <label for="precioCosto" class="form-label">Precio de Costo</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    class="form-control input-requerido" 
+                    id="precioCosto" 
+                    placeholder="Ingrese el precio de costo" 
+                  />
+                  <span class="error-texto text-danger" id="errorPrecioCosto"></span>
+                </div>
+              </form>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="LimpiarModal()">Cancelar</button>
+              <button type="button" class="btn btn-editar" onclick="GuardarMaterial()">Guardar</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de Materiales -->
+      <div class="table-responsive mt-3">
+        <table class="table table-bordered table-sm align-middle">
+          <thead>
+            <tr>
+              <th scope="col">Material</th>
+              <th scope="col">Rubro</th>
+              <th scope="col">Precio de Costo</th>
+              <th scope="col" class="columnaBtn">Editar</th>
+              <th scope="col" class="columnaBtn">Eliminar</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-materiales">
+            <!-- Los datos se cargan dinámicamente vía JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </article>
+  </section>
+</div>
+<script src="../../js/material.js"></script>

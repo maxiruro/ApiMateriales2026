@@ -1,0 +1,6 @@
+@APIMateriales2026MaximilianoRojas_HostAddress = http://localhost:5067
+
+GET {{APIMateriales2026MaximilianoRojas_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

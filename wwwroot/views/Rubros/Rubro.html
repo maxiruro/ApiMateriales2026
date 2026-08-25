@@ -1,0 +1,92 @@
+<div class="container mt-3">
+
+  <section>
+    <article>
+
+      <h2 class="titulo-vista">Rubros</h2>
+
+      <!-- Button trigger modal -->
+      <button type="button" class="btn-nuevo-flotante" data-bs-toggle="modal" data-bs-target="#modalRubro">
+        Nuevo Rubro
+      </button>
+
+      <!-- Modal crear tipo actividad -->
+      <div class="modal fade" id="modalRubro" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5 subTitulo-vista">Registro</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                onclick="LimpiarModal()"></button>
+            </div>
+            <div class="modal-body">
+              <form class="formRubro">
+                <input type="hidden" id="rubroID" value="0" disabled />
+
+                <div class="mb-3">
+                  <label for="rubroDescripcion" class="form-label">Descripción</label>
+                  <input type="text" class="form-control input-requerido" id="rubroDescripcion"
+                    placeholder="Ingrese el rubro a cargar" style="text-transform: uppercase" />
+                 <span class="error-texto  text-danger" id="errorRubro"></span>
+                </div>
+
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                onclick="LimpiarModal()">Cancelar</button>
+              <button type="button" class="btn btn-editar" onclick="GuardarRubro()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--MODAL CONSULTAR MATERIALES-->
+        <div class="modal fade" id="modalConsultar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="consultarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 subTitulo-vista">Detalle de materiales</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                onclick="LimpiarModal()"></button>
+                </div>
+
+            <div class="modal-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th class="text-end">Precio de Costo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaConsultarDetalle"></tbody>
+                    </table>
+                </div>
+            </div>
+                <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                onclick="LimpiarModal()">Cerrar</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th scope="col">Rubro</th>
+            <th scope="col" class="columnaBtn">Editar</th>
+            <th scope="col" class="columnaBtn">Eliminar</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-rubros"></tbody>
+      </table>
+
+
+    </article>
+  </section>
+
+</div>
+<script src="../../js/rubro.js"></script>

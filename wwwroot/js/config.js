@@ -1,0 +1,1 @@
+let linkApi = 'https://localhost:5067/api';
