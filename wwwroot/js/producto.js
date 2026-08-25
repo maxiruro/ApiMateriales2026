@@ -283,7 +283,7 @@ async function EliminarMaterial(materialProductoId) {
   }
 
   // 1. Obtenemos el ID del producto que tenemos guardado en el input hidden del modal
-    const productoID = document.getElementById("productoID").value;
+    const productoID = document.getElementById("materialProductoID").value;
 
   try {
     const respuesta = await fetch(`${linkApi}/Productos/EliminarMaterialProducto/${materialProductoId}`, {
