@@ -30,7 +30,26 @@
                  <span class="error-texto  text-danger" id="errorProducto"></span>
                 </div>
 
-              </form>
+                <div class="form-group">
+                  <label for="PrecioCosto">Precio Costo:</label>
+                  <input type="number" id="precioCosto" class="form-control" readonly />
+                </div>
+                
+                <div class="mb-3"> <label for="porcentajeGanancia" class="form-label">% de ganancia</label>
+                
+                  <input type="number" class="form-control input-requerido" id="porcentajeGanancia" oninput="CalcularPrecioVenta()" />
+                
+                  <span class="error-texto text-danger" id="errorProducto"></span>
+                
+                </div>
+                
+                <div class="mb-3"> <label for="precioVenta" class="form-label">Precio de venta</label>
+                
+                  <input type="number" class="form-control input-requerido" id="precioVenta" oninput="CalcularPorcentajeGanancia()" />
+                
+                </div>
+                
+                </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
@@ -82,9 +101,9 @@
                 <thead>
                   <tr>
                     <th scope="col">Material</th>
-                    <th class="text-center" scope="col">Precio de costo unitario</th>
-                    <th class="text-center" scope="col">Cantidad</th>
-                    <th class="text-center" scope="col">Subtotal</th>
+                    <th class="text-end" scope="col">Precio de costo unitario</th>
+                    <th class="text-end" scope="col">Cantidad</th>
+                    <th class="text-end" scope="col">Subtotal</th>
                     <th class="text-center" scope="col">Eliminar</th>
                   </tr>
                 </thead>
@@ -102,7 +121,9 @@
         <thead>
           <tr>
             <th scope="col">Producto</th>
-            <th scope="col">Costo Total</th>
+            <th class="text-end" scope="col">Costo Total</th>
+            <th class="text-end" scope="col">% de ganancia</th>
+            <th class="text-end" scope="col">Precio de venta</th>
             <th scope="col" class="columnaBtn">Composición</th>
             <th scope="col" class="columnaBtn">Editar</th>
             <th scope="col" class="columnaBtn">Eliminar</th>

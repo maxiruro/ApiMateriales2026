@@ -8,6 +8,8 @@ namespace ApiMateriales2026MaximilianoRojas.Models
         public int ProductoID {get; set;}
         public string? Descripcion {get; set;}
         public decimal CostoTotal {get; set;}
+        public decimal PorcentajeGanancia {get; set;}
+        public decimal PrecioVenta {get; set;}
         public bool Eliminado {get; set;}
         public virtual ICollection<MaterialProducto>? MaterialesProducto {get; set;}
     }

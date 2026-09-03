@@ -27,7 +27,9 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 {
                     ProductoID = p.ProductoID,
                     Descripcion = p.Descripcion,
-                    CostoTotal = p.CostoTotal
+                    CostoTotal = p.CostoTotal,
+                    PorcentajeGanancia = p.PorcentajeGanancia,
+                    PrecioVenta = p.PrecioVenta
                 })
                 .ToListAsync();
 
@@ -63,17 +65,31 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 return BadRequest(new { mensaje = "La descripción es obligatoria" });
             }
 
-            producto.Descripcion = producto.Descripcion?.Trim().ToUpper();
+            var productoExistente = await _context.Productos
+                .FirstOrDefaultAsync(p => p.ProductoID == id);
 
-            var productoExiste = await _context.Productos.AnyAsync(p => p.Descripcion == producto.Descripcion && p.ProductoID != producto.ProductoID); 
-            //AnyAsync() es más eficiente cuando solo necesitás saber si existe un registro, ya que no trae la entidad completa.
+            if (productoExistente == null)
+            {
+                return NotFound();
+            }
+
+            producto.Descripcion = producto.Descripcion.Trim().ToUpper();
+
+            var productoExiste = await _context.Productos
+                .AnyAsync(p =>
+                    p.Descripcion == producto.Descripcion &&
+                    p.ProductoID != id);
 
             if (productoExiste)
             {
                 return Conflict(new { mensaje = "Ya existe ese Producto" });
             }
 
-            _context.Entry(producto).State = EntityState.Modified;
+            // Actualizar solamente los campos que corresponden
+            productoExistente.Descripcion = producto.Descripcion;
+            productoExistente.CostoTotal = producto.CostoTotal;
+            productoExistente.PorcentajeGanancia = producto.PorcentajeGanancia;
+            productoExistente.PrecioVenta = producto.PrecioVenta;
 
             try
             {
@@ -85,13 +101,12 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+
+                throw;
             }
 
             return NoContent();
+
         }
 
         [HttpPost]
@@ -179,6 +194,9 @@ namespace ApiMateriales2026MaximilianoRojas.controller
 
             // 5. Actualizar el costo del producto y guardar cambios
             producto.CostoTotal = totalCostoProducto;
+            // Mantener el porcentaje de ganancia existente
+            producto.PrecioVenta = producto.CostoTotal + (producto.CostoTotal * producto.PorcentajeGanancia / 100);
+
             await _context.SaveChangesAsync();
 
             return Ok(new { 
@@ -237,6 +255,9 @@ namespace ApiMateriales2026MaximilianoRojas.controller
             if (producto != null)
             {
                 producto.CostoTotal = totalCostoProducto;
+                // Mantener el porcentaje de ganancia existente
+                producto.PrecioVenta = producto.CostoTotal + (producto.CostoTotal * producto.PorcentajeGanancia / 100);
+
                 await _context.SaveChangesAsync();
             }
 
@@ -245,6 +266,35 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 mensaje = "Material eliminado correctamente",
                 nuevoCostoProducto = totalCostoProducto
             });
+        }
+
+        [HttpGet("materialesPorProducto")]
+        public async Task<ActionResult<IEnumerable<ProductoReporteDTO>>> ObtenerMaterialesPorProducto()
+        {
+            var resultado = await _context.Productos
+                .Select(p => new ProductoReporteDTO
+                {
+                    // Datos leídos directo de la tabla Productos
+                    Descripcion = p.Descripcion,
+                    CostoTotal = p.CostoTotal,
+                    PorcentajeGanancia = p.PorcentajeGanancia,
+                    PrecioVenta = p.PrecioVenta, // O si prefieres: p.CostoTotal * (1 + (p.PorcentajeDeGanancia / 100))
+
+                    // Subnivel: Mapeo navegando por la tabla intermedia (MaterialesProductos)
+                    ListadoMateriales = p.MaterialesProducto.Select(mp => new MaterialProductoReporteDTO
+                    {
+                        // Datos del Material (Tabla Materiales)
+                        Descripcion = mp.Material.Descripcion,
+                        PrecioCostoUnitario = mp.Material.PrecioCosto,
+
+                        // Datos de la relación (Tabla MaterialesProductos)
+                        Cantidad = mp.Cantidad,
+                        Subtotal = mp.Subtotal
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(resultado);
         }
     }
 }

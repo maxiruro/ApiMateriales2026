@@ -58,11 +58,19 @@ async function ObtenerProductos() {
         style: "currency",
         currency: "ARS"
       });
+      
+      const precioVentaNum = Number(producto.precioVenta) || 0;
+      const precioVentaTexto = precioVentaNum.toLocaleString("es-AR", {
+        style: "currency",
+        currency: "ARS"
+      });
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${producto.descripcion || ''}</td>
         <td class="text-end">${precioTexto}</td>
+        <td class="text-end">${producto.porcentajeGanancia}%</td>
+        <td class="text-end">${precioVentaTexto}</td>
         <td class="text-center columnaBtn">
           <button class="btn btn-editar" title='Composición' onclick="AbrirModalComposicion(${producto.productoID})">
             <i class="fa-solid fa-list"></i>
@@ -86,6 +94,7 @@ async function ObtenerProductos() {
 }
 
 async function AbrirModalEditar(id) {
+  
   try {
     const respuesta = await fetch(`${linkApi}/Productos/${id}`);
     if (!respuesta.ok) throw new Error("No se pudo obtener el producto");
@@ -94,6 +103,15 @@ async function AbrirModalEditar(id) {
 
     document.getElementById("productoID").value = producto.productoID;
     document.getElementById("productoDescripcion").value = producto.descripcion;
+    
+    const elemCosto = document.getElementById("precioCosto");
+    const elemPorcentaje = document.getElementById("porcentajeGanancia");
+    const elemPrecioVenta = document.getElementById("precioVenta");
+    
+    if (elemCosto) { elemCosto.value = producto.costoTotal ?? 0; }
+    if (elemPorcentaje) { elemPorcentaje.value = producto.porcentajeGanancia ?? 0; }
+    if (elemPrecioVenta) { elemPrecioVenta.value = producto.precioVenta ?? 0; }
+    
 
     const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProducto'));
     modal.show();
@@ -109,10 +127,16 @@ async function GuardarProducto() {
 
   const productoID = parseInt(document.getElementById("productoID").value) || 0;
   const descripcion = document.getElementById("productoDescripcion").value.trim();
+  const costoTotal = parseFloat(document.getElementById("precioCosto")?.value) || 0;
+  const porcentajeGanancia = parseFloat(document.getElementById("porcentajeGanancia")?.value) || 0;
+  const precioVenta = parseFloat(document.getElementById("precioVenta")?.value) || 0;
 
   const productoDTO = {
     productoID: productoID,
     descripcion: descripcion,
+    costoTotal: costoTotal,
+    porcentajeGanancia: porcentajeGanancia,
+    precioVenta: precioVenta
   };
 
   try {
@@ -211,11 +235,29 @@ function validarCamposRequeridos(contenedor) {
 }
 
 function LimpiarModal() {
-  document.getElementById("productoID").value = "0";
-  document.getElementById("productoDescripcion").value = "";
+document.getElementById("productoID").value = "0";
+document.getElementById("productoDescripcion").value = "";
 
-  // Ocultar mensajes de error
-  document.querySelectorAll(".error-texto").forEach(e => e.style.display = "none");
+const precioCosto = document.getElementById("precioCosto");
+const porcentajeGanancia = document.getElementById("porcentajeGanancia");
+const precioVenta = document.getElementById("precioVenta");
+
+if (precioCosto) {
+    precioCosto.value = "";
+}
+
+if (porcentajeGanancia) {
+    porcentajeGanancia.value = "";
+}
+
+if (precioVenta) {
+    precioVenta.value = "";
+}
+
+document.querySelectorAll(".error-texto").forEach(e => {
+    e.style.display = "none";
+});
+
 }
 
 // 7. INICIALIZACIÓN
@@ -260,9 +302,9 @@ async function CargarTablaMateriales(productoID) {
       tbody.innerHTML += `
         <tr>
           <td>${item.materialNombre}</td>
-          <td class="text-center">$${item.precioCostoUnitario.toFixed(2)}</td>
-          <td class="text-center">${item.cantidad}</td>
-          <td class="text-center">$${item.subtotal.toFixed(2)}</td>
+          <td class="text-end">$${item.precioCostoUnitario.toFixed(2)}</td>
+          <td class="text-end">${item.cantidad}</td>
+          <td class="text-end">$${item.subtotal.toFixed(2)}</td>
           <td class="text-center">
             <button class="btn btn-eliminar" title='Eliminar material' onclick="EliminarMaterial(${item.materialProductoID})">
             <i class="fa-solid fa-trash"></i>
@@ -282,7 +324,7 @@ async function EliminarMaterial(materialProductoId) {
     return;
   }
 
-  // 1. Obtenemos el ID del producto que tenemos guardado en el input hidden del modal
+  // 1. Obtenemos el ID de materialProducto que tenemos guardado en el input hidden del modal
     const productoID = document.getElementById("materialProductoID").value;
 
   try {
@@ -368,4 +410,51 @@ async function AgregarMaterialProducto() {
     console.error("Error en AgregarMaterialProducto:", error);
     alert(`Ocurrió un error: ${error.message}`);
   }
+}
+
+// -------------------------------------------------------------
+// CÁLCULOS DINÁMICOS DE PRECIO DE VENTA Y PORCENTAJE DE GANANCIA
+// -------------------------------------------------------------
+
+// Modifica el Precio de Venta manteniendo el Porcentaje de Ganancia
+function CalcularPrecioVenta() {
+const elemCosto = document.getElementById("precioCosto");
+const elemPorcentaje = document.getElementById("porcentajeGanancia");
+const elemPrecioVenta = document.getElementById("precioVenta");
+
+if (!elemCosto || !elemPorcentaje || !elemPrecioVenta) {
+    return;
+}
+
+const costo = Number(elemCosto.value) || 0;
+const porcentaje = Number(elemPorcentaje.value) || 0;
+
+const precioVenta = costo + (costo * porcentaje / 100);
+
+elemPrecioVenta.value = precioVenta.toFixed(2);
+
+}
+
+function CalcularPorcentajeGanancia() {
+const elemCosto = document.getElementById("precioCosto");
+const elemPorcentaje = document.getElementById("porcentajeGanancia");
+const elemPrecioVenta = document.getElementById("precioVenta");
+
+if (!elemCosto || !elemPorcentaje || !elemPrecioVenta) {
+    return;
+}
+
+const costo = Number(elemCosto.value) || 0;
+const precioVenta = Number(elemPrecioVenta.value) || 0;
+
+if (costo <= 0) {
+    elemPorcentaje.value = "0.00";
+    return;
+}
+
+const porcentaje =
+    ((precioVenta - costo) / costo) * 100;
+
+elemPorcentaje.value = porcentaje.toFixed(2);
+
 }

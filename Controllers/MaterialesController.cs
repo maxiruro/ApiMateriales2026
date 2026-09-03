@@ -72,8 +72,8 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 return BadRequest("El precio de costo debe ser mayor a cero.");
             }
 
-            var materialOriginal = await _context.Materiales
-                 .SingleOrDefaultAsync(m => m.MaterialID == id);
+            var materialOriginal = await _context.Materiales.Where(m => m.MaterialID == id)
+                 .SingleOrDefaultAsync();
 
             if (materialOriginal == null)
             {
@@ -116,7 +116,7 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 }
             }
 
-            return NoContent();
+            return Ok();
         }
 
         [HttpPost]
