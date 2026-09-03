@@ -278,7 +278,7 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                     Descripcion = p.Descripcion,
                     CostoTotal = p.CostoTotal,
                     PorcentajeGanancia = p.PorcentajeGanancia,
-                    PrecioVenta = p.PrecioVenta, // O si prefieres: p.CostoTotal * (1 + (p.PorcentajeDeGanancia / 100))
+                    PrecioVenta = p.PrecioVenta, 
 
                     // Subnivel: Mapeo navegando por la tabla intermedia (MaterialesProductos)
                     ListadoMateriales = p.MaterialesProducto.Select(mp => new MaterialProductoReporteDTO
