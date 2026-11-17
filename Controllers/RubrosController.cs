@@ -151,5 +151,39 @@ namespace ApiMateriales2026MaximilianoRojas.controller
         {
             return _context.Rubros.Any(r => r.RubroID == id);
         }
+
+        // 1. Obtener Materiales filtrados por Rubro
+        [HttpGet("ObtenerMaterialesPorRubro/{rubroId}")]
+        public async Task<IActionResult> ObtenerMaterialesPorRubro(int rubroId)
+        {
+            var materiales = await _context.Materiales 
+                .Where(m => m.RubroID == rubroId)
+                .Select(m => new
+                {
+                    m.MaterialID, 
+                    m.Descripcion  
+                })
+                .ToListAsync();
+
+            return Ok(materiales);
+        }
+
+        // 2. Obtener Productos filtrados por Material (usando tu tabla intermedia MaterialesProducto)
+        [HttpGet("ObtenerProductosPorMaterial/{materialId}")]
+        public async Task<IActionResult> ObtenerProductosPorMaterial(int materialId)
+        {
+            var productos = await _context.MaterialesProducto
+                .Include(mp => mp.Producto) // Navegando hacia la entidad Producto
+                .Where(mp => mp.MaterialID == materialId)
+                .Select(mp => new
+                {
+                    ProductoID = mp.Producto != null ? mp.Producto.ProductoID : 0,
+                    ProductoNombre = mp.Producto != null ? mp.Producto.Descripcion : "Sin nombre"
+                })
+                .Distinct() // Por si un producto aparece varias veces con el mismo material
+                .ToListAsync();
+
+            return Ok(productos);
+        }
     }
 }

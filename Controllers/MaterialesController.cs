@@ -6,7 +6,7 @@ using ApiMateriales2026MaximilianoRojas.ModelsViews;
 namespace ApiMateriales2026MaximilianoRojas.controller
 {
     [ApiController]
-     [Route("api/[controller]")]
+    [Route("api/[controller]")]
     public class MaterialesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -72,8 +72,10 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 return BadRequest("El precio de costo debe ser mayor a cero.");
             }
 
-            var materialOriginal = await _context.Materiales.Where(m => m.MaterialID == id)
-                 .SingleOrDefaultAsync();
+            // 1. Buscamos el material original incluyendo o sin incluir cosas, pero necesitamos su precio anterior
+            var materialOriginal = await _context.Materiales
+                .Where(m => m.MaterialID == id)
+                .SingleOrDefaultAsync();
 
             if (materialOriginal == null)
             {
@@ -96,13 +98,23 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 return Conflict(new { mensaje = "Ya existe ese Material." });
             }
 
+            // Guardamos si el costo cambió para saber si debemos recalcular
+            //bool costoCambio = materialOriginal.PrecioCosto != material.PrecioCosto;
+
+            // Actualizamos las propiedades del material original
             materialOriginal.RubroID = material.RubroID;
             materialOriginal.Descripcion = material.Descripcion;
             materialOriginal.PrecioCosto = material.PrecioCosto;
 
+            // 2. SI EL COSTO CAMBIÓ, hacemos el recálculo en cascada aquí mismo
+
+
             try
             {
+                // 3. Se guarda todo de un solo golpe (Material actualizado + Productos recalculados)
                 await _context.SaveChangesAsync();
+
+                RecalcularProductosMateriales(material.MaterialID, material.PrecioCosto);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -116,11 +128,63 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 }
             }
 
-            return Ok();
+            return Ok(new { mensaje = "Material actualizado y precios recalculados correctamente." });
         }
 
+        public void RecalcularProductosMateriales(int MaterialID, decimal PrecioCosto)
+        {
+            // Buscamos todos los productos afectados por ese material
+            var productosMaterial = _context.MaterialesProducto
+                .Where(cp => cp.MaterialID == MaterialID)
+                .ToList();
+
+            foreach (var productoMaterial in productosMaterial)
+            {
+                productoMaterial.PrecioCostoUnitario = PrecioCosto;
+
+                productoMaterial.Subtotal = PrecioCosto * productoMaterial.Cantidad;
+
+            }
+            _context.SaveChanges();
+
+            var productosIDActualizar = _context.MaterialesProducto
+                .Where(cp => cp.MaterialID == MaterialID)
+                .Select(p => p.ProductoID)
+                .ToList();
+
+            foreach (var productoIDActualizar in productosIDActualizar)
+            {
+                decimal Importe = RecalcularCostoProducto(productoIDActualizar);
+            }
+
+
+        }
+
+        public decimal RecalcularCostoProducto(int ProductoID)
+        {
+            // 1. Recalcular el nuevo costo total del producto
+            var totalCostoProducto = _context.MaterialesProducto
+                .Where(mp => mp.ProductoID == ProductoID)
+                .Sum(mp => (decimal?)mp.Subtotal) ?? 0; // Si no quedan materiales, devuelve 0
+
+            // 2. Actualizar el costo del producto principal
+            var producto = _context.Productos.Where(p => p.ProductoID == ProductoID).SingleOrDefault();
+            if (producto != null)
+            {
+                producto.CostoTotal = totalCostoProducto;
+                //     // Mantener el porcentaje de ganancia existente
+                producto.PrecioVenta = producto.CostoTotal + (producto.CostoTotal * producto.PorcentajeGanancia / 100);
+
+                _context.SaveChanges();
+            }
+
+            return totalCostoProducto;
+
+        }
+
+
         [HttpPost]
-        public async Task<ActionResult<Material>> PostMaterial (Material material)
+        public async Task<ActionResult<Material>> PostMaterial(Material material)
         {
             if (string.IsNullOrWhiteSpace(material.Descripcion))
             {
