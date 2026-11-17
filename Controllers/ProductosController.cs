@@ -187,7 +187,9 @@ namespace ApiMateriales2026MaximilianoRojas.controller
             _context.MaterialesProducto.Add(nuevoMaterialProducto);
             await _context.SaveChangesAsync();
 
-            decimal totalCostoProducto = RecalcularCostoProducto(dto.ProductoID);
+            var materialesController = new MaterialesController(_context);
+
+            decimal totalCostoProducto = materialesController.RecalcularCostoProducto(dto.ProductoID);
 
             return Ok(new { 
         mensaje = "Material agregado correctamente", 
@@ -217,27 +219,27 @@ namespace ApiMateriales2026MaximilianoRojas.controller
             return Ok(listado);
         }
 
-        public decimal RecalcularCostoProducto (int ProductoID)
-        {
-             // 1. Recalcular el nuevo costo total del producto
-            var totalCostoProducto =  _context.MaterialesProducto
-                .Where(mp => mp.ProductoID == ProductoID)
-                .Sum(mp => (decimal?)mp.Subtotal) ?? 0; // Si no quedan materiales, devuelve 0
+        // public decimal RecalcularCostoProducto (int ProductoID)
+        // {
+        //      // 1. Recalcular el nuevo costo total del producto
+        //     var totalCostoProducto =  _context.MaterialesProducto
+        //         .Where(mp => mp.ProductoID == ProductoID)
+        //         .Sum(mp => (decimal?)mp.Subtotal) ?? 0; // Si no quedan materiales, devuelve 0
 
-            // 2. Actualizar el costo del producto principal
-            var producto = _context.Productos.Find(ProductoID);
-            if (producto != null)
-            {
-                producto.CostoTotal = totalCostoProducto;
-                // Mantener el porcentaje de ganancia existente
-                producto.PrecioVenta = producto.CostoTotal + (producto.CostoTotal * producto.PorcentajeGanancia / 100);
+        //     // 2. Actualizar el costo del producto principal
+        //     var producto = _context.Productos.Find(ProductoID);
+        //     if (producto != null)
+        //     {
+        //         producto.CostoTotal = totalCostoProducto;
+        //         // Mantener el porcentaje de ganancia existente
+        //         producto.PrecioVenta = producto.CostoTotal + (producto.CostoTotal * producto.PorcentajeGanancia / 100);
 
-                 _context.SaveChanges();
-            }
+        //          _context.SaveChanges();
+        //     }
 
-            return totalCostoProducto;
+        //     return totalCostoProducto;
 
-        }
+        // }
 
         [HttpDelete("EliminarMaterialProducto/{materialProductoId}")]
         public async Task<IActionResult> EliminarMaterialProducto(int materialProductoId)
@@ -257,7 +259,9 @@ namespace ApiMateriales2026MaximilianoRojas.controller
             _context.MaterialesProducto.Remove(materialProducto);
             await _context.SaveChangesAsync();
 
-            decimal totalCostoProducto = RecalcularCostoProducto(productoId);
+            var materialesController = new MaterialesController(_context);
+
+            decimal totalCostoProducto = materialesController.RecalcularCostoProducto(productoId);
 
            
             return Ok(new
