@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiMateriales2026MaximilianoRojas.Models;
-using ApiMateriales2026MaximilianoRojas.ModelsViews; 
+using ApiMateriales2026MaximilianoRojas.ModelsViews;
 
 namespace ApiMateriales2026MaximilianoRojas.controller
 {
     [ApiController]
-     [Route("api/[controller]")]
+    [Route("api/[controller]")]
     public class ProductosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -110,7 +110,7 @@ namespace ApiMateriales2026MaximilianoRojas.controller
         }
 
         [HttpPost]
-        public async Task<ActionResult<Producto>> PostProducto (Producto producto)
+        public async Task<ActionResult<Producto>> PostProducto(Producto producto)
         {
             if (string.IsNullOrWhiteSpace(producto.Descripcion))
             {
@@ -119,7 +119,7 @@ namespace ApiMateriales2026MaximilianoRojas.controller
 
             producto.Descripcion = producto.Descripcion?.Trim().ToUpper();
 
-            var productoExiste = await _context.Productos.AnyAsync(p => p.Descripcion == producto.Descripcion); 
+            var productoExiste = await _context.Productos.AnyAsync(p => p.Descripcion == producto.Descripcion);
             //AnyAsync() es más eficiente cuando solo necesitás saber si existe un registro, ya que no trae la entidad completa.
 
             if (productoExiste)
@@ -142,8 +142,21 @@ namespace ApiMateriales2026MaximilianoRojas.controller
             {
                 return NotFound();
             }
+
+            // 1. Marcar el producto como eliminado (borrado lógico)
             producto.Eliminado = true;
-            
+
+            // 2. Buscar y eliminar los registros de su composición en MaterialesProducto
+            var composiciones = await _context.MaterialesProducto
+                .Where(mp => mp.ProductoID == id)
+                .ToListAsync();
+
+            if (composiciones.Count > 0)
+            {
+                _context.MaterialesProducto.RemoveRange(composiciones);
+            }
+
+            // 3. Guardar ambos cambios en la misma operación
             await _context.SaveChangesAsync();
 
             return Ok();
@@ -191,11 +204,12 @@ namespace ApiMateriales2026MaximilianoRojas.controller
 
             decimal totalCostoProducto = materialesController.RecalcularCostoProducto(dto.ProductoID);
 
-            return Ok(new { 
-        mensaje = "Material agregado correctamente", 
-        materialProductoID = nuevoMaterialProducto.MaterialProductoID,
-        nuevoCostoProducto = totalCostoProducto
-    });
+            return Ok(new
+            {
+                mensaje = "Material agregado correctamente",
+                materialProductoID = nuevoMaterialProducto.MaterialProductoID,
+                nuevoCostoProducto = totalCostoProducto
+            });
         }
 
         [HttpGet("ObtenerMaterialesProducto/{productoId}")]
@@ -219,28 +233,6 @@ namespace ApiMateriales2026MaximilianoRojas.controller
             return Ok(listado);
         }
 
-        // public decimal RecalcularCostoProducto (int ProductoID)
-        // {
-        //      // 1. Recalcular el nuevo costo total del producto
-        //     var totalCostoProducto =  _context.MaterialesProducto
-        //         .Where(mp => mp.ProductoID == ProductoID)
-        //         .Sum(mp => (decimal?)mp.Subtotal) ?? 0; // Si no quedan materiales, devuelve 0
-
-        //     // 2. Actualizar el costo del producto principal
-        //     var producto = _context.Productos.Find(ProductoID);
-        //     if (producto != null)
-        //     {
-        //         producto.CostoTotal = totalCostoProducto;
-        //         // Mantener el porcentaje de ganancia existente
-        //         producto.PrecioVenta = producto.CostoTotal + (producto.CostoTotal * producto.PorcentajeGanancia / 100);
-
-        //          _context.SaveChanges();
-        //     }
-
-        //     return totalCostoProducto;
-
-        // }
-
         [HttpDelete("EliminarMaterialProducto/{materialProductoId}")]
         public async Task<IActionResult> EliminarMaterialProducto(int materialProductoId)
         {
@@ -263,7 +255,7 @@ namespace ApiMateriales2026MaximilianoRojas.controller
 
             decimal totalCostoProducto = materialesController.RecalcularCostoProducto(productoId);
 
-           
+
             return Ok(new
             {
                 mensaje = "Material eliminado correctamente",
@@ -281,7 +273,7 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                     Descripcion = p.Descripcion,
                     CostoTotal = p.CostoTotal,
                     PorcentajeGanancia = p.PorcentajeGanancia,
-                    PrecioVenta = p.PrecioVenta, 
+                    PrecioVenta = p.PrecioVenta,
 
                     // Subnivel: Mapeo navegando por la tabla intermedia (MaterialesProductos)
                     ListadoMateriales = p.MaterialesProducto.Select(mp => new MaterialProductoReporteDTO

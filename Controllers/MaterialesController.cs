@@ -98,20 +98,15 @@ namespace ApiMateriales2026MaximilianoRojas.controller
                 return Conflict(new { mensaje = "Ya existe ese Material." });
             }
 
-            // Guardamos si el costo cambió para saber si debemos recalcular
-            //bool costoCambio = materialOriginal.PrecioCosto != material.PrecioCosto;
-
             // Actualizamos las propiedades del material original
             materialOriginal.RubroID = material.RubroID;
             materialOriginal.Descripcion = material.Descripcion;
             materialOriginal.PrecioCosto = material.PrecioCosto;
 
-            // 2. SI EL COSTO CAMBIÓ, hacemos el recálculo en cascada aquí mismo
-
 
             try
             {
-                // 3. Se guarda todo de un solo golpe (Material actualizado + Productos recalculados)
+                // Se guarda todo de un solo golpe (Material actualizado + Productos recalculados)
                 await _context.SaveChangesAsync();
 
                 RecalcularProductosMateriales(material.MaterialID, material.PrecioCosto);
